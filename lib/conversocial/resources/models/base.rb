@@ -62,7 +62,7 @@ module Conversocial
                 end
 
                 if association_attribute? value
-                  value = client.send("#{f}s".to_sym).find value['id']
+                  value = client.send(pluralized_resource_type_from_association_attribute(value).to_sym).find value['id']
                   send "#{f}=".to_sym, value
                 end
               end
@@ -93,6 +93,10 @@ module Conversocial
             return true if attribute_value['url'].present?
           end
           false
+        end
+
+        def pluralized_resource_type_from_association_attribute attribute_value
+          attribute_value['url'].split('v1.1/').last.split('/').first
         end
 
 
