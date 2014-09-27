@@ -61,8 +61,17 @@ module Conversocial
                   end
                 end
 
-                if association_attribute? value
-                  value = client.send(pluralized_resource_type_from_association_attribute(value).to_sym).find value['id']
+                if value.kind_of? Array
+                  value = value.map do |v|
+                    if association_attribute? v
+                      load_association v
+                    else
+                      v
+                    end
+                  end
+                  send "#{f}=".to_sym, value
+                else
+                  value = load_association value if association_attribute? value
                   send "#{f}=".to_sym, value
                 end
               end
@@ -97,6 +106,10 @@ module Conversocial
 
         def pluralized_resource_type_from_association_attribute attribute_value
           attribute_value['url'].split('v1.1/').last.split('/').first
+        end
+
+        def load_association value
+          client.send(pluralized_resource_type_from_association_attribute(value).to_sym).find value['id']
         end
 
 
