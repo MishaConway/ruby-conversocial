@@ -6,7 +6,7 @@ module Conversocial
           %w{}
         end
 
-        fields.each { |f| attr_accessor f }
+        attributize_tags
 
 
       end

@@ -6,7 +6,7 @@ module Conversocial
           %w{id first_name last_name timezone date_joined last_login email account url}
         end
 
-        fields.each { |f| attr_accessor f }
+        attributize_tags
 
 
       end

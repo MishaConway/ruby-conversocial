@@ -2,8 +2,11 @@ module Conversocial
   module Resources
     module Models
       class Base
+        attr_reader :loaded_attributes
+
         def initialize params={}
           disable_association_resolving do
+            @loaded_attributes = {}
             assign_attributes params
           end
         end
@@ -41,10 +44,23 @@ module Conversocial
 
         def self.attributize_tags
           fields.map(&:to_sym).each do |f|
-            attr_writer f
+
+            define_method "#{f}=".to_sym do |v|
+              @loaded_attributes[f] = 1
+              instance_variable_set "@#{f}", v
+            end
+
+
             define_method f do
               value = instance_variable_get "@#{f}"
               unless @disable_association_resolving
+                if value.nil?
+                  unless @loaded_attributes[f]
+                    refresh
+                    value = instance_variable_get "@#{f}"
+                  end
+                end
+
                 if association_attribute? value
                   value = client.send("#{f}s".to_sym).find value['id']
                   send "#{f}=".to_sym, value

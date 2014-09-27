@@ -6,7 +6,7 @@ module Conversocial
           %w{id name url is_active}
         end
 
-        fields.each { |f| attr_accessor f }
+        attributize_tags
 
 
       end

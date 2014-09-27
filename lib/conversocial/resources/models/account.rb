@@ -5,8 +5,8 @@ module Conversocial
         def self.fields
           %w{url reports id channels description package created_date name}.map &:to_sym
         end
+        attributize_tags
 
-        fields.each { |f| attr_accessor f }
 
 
       end
