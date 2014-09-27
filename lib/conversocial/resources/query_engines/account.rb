@@ -1,12 +1,21 @@
 module Conversocial
   module Resources
     module QueryEngines
-      class Account
-        def self.fields
-          %w{url reports id channels description package created_date name}.map &:to_sym
+      class Account < Base
+
+
+        def initialize client
+          super client
+          @query_params[:all][:is_priority] = 'false'
+          @query_params[:all][:include]     = 'content'
         end
 
-        fields.each { |f| attr_accessor f }
+        protected
+
+        def model_klass
+          Conversocial::Resources::Models::Account
+        end
+
 
 
       end

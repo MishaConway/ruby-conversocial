@@ -38,13 +38,29 @@ module Conversocial
           @query_params[:find][:fields] ||= model_klass.fields.join(',')
 
           json = get_json add_query_params("/#{find_id}", @query_params[:find])
-          new json[resource_name]
+          if json.kind_of? Exception
+            if json.kind_of? RestClient::Exception
+              JSON.parse json.response.body
+            else
+              raise json
+            end
+          else
+            new json[resource_name]
+          end
         end
 
         def all
           json = get_json add_query_params("", @query_params[:all])
-          response = json[plural_resource_name].map do |instance_params|
-            new instance_params
+          if json.kind_of? Exception
+            if json.kind_of? RestClient::Exception
+              JSON.parse json.response.body
+            else
+              raise json
+            end
+          else
+            response = json[plural_resource_name].map do |instance_params|
+              new instance_params
+            end
           end
         end
 

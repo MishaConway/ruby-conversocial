@@ -24,6 +24,11 @@ module Conversocial
 
         protected
 
+        def define_tags tags
+
+        end
+
+
         def client
           @client
         end

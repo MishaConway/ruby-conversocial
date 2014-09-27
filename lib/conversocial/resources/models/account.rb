@@ -1,7 +1,7 @@
 module Conversocial
   module Resources
     module Models
-      class Account
+      class Account < Base
         def self.fields
           %w{url reports id channels description package created_date name}.map &:to_sym
         end
