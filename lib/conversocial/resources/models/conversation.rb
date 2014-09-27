@@ -1,11 +1,7 @@
 module Conversocial
   module Resources
     module Models
-      class Conversation
-
-
-
-
+      class Conversation < Base
         def self.fields
           %w{id
 url
@@ -20,40 +16,22 @@ content_ids
 handling_times}.map &:to_sym
         end
 
-        fields.each do |f|
-          attr_accessor f.to_sym
-        end
+        fields.map(&:to_sym).each do |f|
+          attr_writer f
+          define_method f do
+            value = instance_variable_get "@#{f}"
+            if association_attribute? value
+              value = client.send( "#{f}s".to_sym ).find value['id']
+              puts "not value is #{value.inspect}"
 
-
-        def initialize params={}
-          assign_attributes params
-        end
-
-        def assign_attributes params={}
-          params.each do |k, v|
-            send "#{k}=".to_sym, v
+              send "#{f}=".to_sym, value
+            end
+            value
           end
         end
 
-        def attributes
-          self.class.fields.map do |field_name|
-            [field_name, send(field_name.to_sym)]
-          end.to_h
-        end
 
-        def refresh
-          assign_attributes @query_engine.find(id).attributes
-        end
 
-protected
-
-        def query_engine
-          @query_engine
-        end
-
-        def assign_query_engine v
-          @query_engine = v
-        end
 
 
 

@@ -1,6 +1,6 @@
 module Conversocial
   class Client
-    attr_reader :version
+    attr_reader :version, :key, :secret
 
 
     def initialize options={}
@@ -13,8 +13,9 @@ module Conversocial
 
     end
 
-    def find_author author_id, options={}
-      Conversocial::Resources::Author.find @key, @secret, author_id, options
+    def authors
+      Conversocial::Resources::QueryEngines::Author.new self
+
     end
 
     def channels
@@ -37,10 +38,8 @@ module Conversocial
 
     end
 
-
-
     def conversations
-      Conversocial::Resources::QueryEngines::Conversation.new @key, @secret
+      Conversocial::Resources::QueryEngines::Conversation.new self
     end
   end
 end
