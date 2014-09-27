@@ -17,6 +17,10 @@ module Conversocial
           end
         end
 
+        def fields
+          self.class.fields
+        end
+
         def attributes
           attrs = nil
           disable_association_resolving do

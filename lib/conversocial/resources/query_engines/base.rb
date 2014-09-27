@@ -25,10 +25,6 @@ module Conversocial
           end
         end
 
-        def limit l
-          where :page_size => l
-        end
-
         def clear
           @query_params = {}
           self

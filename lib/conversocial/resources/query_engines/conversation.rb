@@ -12,6 +12,9 @@ module Conversocial
           {:is_priority => false, :include => 'content'}
         end
 
+        def limit l
+          where :page_size => l
+        end
 
         protected
 
