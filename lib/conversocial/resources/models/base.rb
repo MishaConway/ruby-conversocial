@@ -3,7 +3,9 @@ module Conversocial
     module Models
       class Base
         def initialize params={}
-          assign_attributes params
+          disable_association_resolving do
+            assign_attributes params
+          end
         end
 
         def assign_attributes params={}
@@ -13,19 +15,44 @@ module Conversocial
         end
 
         def attributes
-          self.class.fields.map do |field_name|
-            [field_name, send(field_name.to_sym)]
-          end.to_h
+          attrs = nil
+          disable_association_resolving do
+            attrs = self.class.fields.map do |field_name|
+              [field_name, send(field_name.to_sym)]
+            end.to_h
+          end
+          attrs
         end
 
         def refresh
-          assign_attributes query_engine.find(id).attributes
+          disable_association_resolving do
+            assign_attributes query_engine.find(id).attributes
+          end
+          self
         end
 
         protected
 
-        def define_tags tags
+        def disable_association_resolving
+          @disable_association_resolving = true
+          yield
+          @disable_association_resolving = false
+        end
 
+        def self.attributize_tags
+          fields.map(&:to_sym).each do |f|
+            attr_writer f
+            define_method f do
+              value = instance_variable_get "@#{f}"
+              unless @disable_association_resolving
+                if association_attribute? value
+                  value = client.send("#{f}s".to_sym).find value['id']
+                  send "#{f}=".to_sym, value
+                end
+              end
+              value
+            end
+          end
         end
 
 
@@ -51,7 +78,6 @@ module Conversocial
           end
           false
         end
-
 
 
       end
