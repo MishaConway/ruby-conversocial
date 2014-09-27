@@ -11,6 +11,11 @@ module Conversocial
           end
         end
 
+        def inspect
+          attr_list = attributes.map { |k,v| "#{k}: #{v}" } * ', '
+          "#<#{self.class.name}(#{attr_list})>"
+        end
+
         def assign_attributes params={}
           params.each do |k, v|
             send "#{k}=".to_sym, v
