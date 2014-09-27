@@ -6,9 +6,12 @@ module Conversocial
 
         def initialize client
           super client
-          @query_params[:all][:is_priority] = 'false'
-          @query_params[:all][:include] = 'content'
         end
+
+        def default_all_query_params
+          {:is_priority => false, :include => 'content'}
+        end
+
 
         protected
 

@@ -2,10 +2,11 @@ module Conversocial
   module Resources
     module QueryEngines
       class Author < Base
+        undef_method :all
+        undef_method :limit
+
         def initialize client
           super client
-          @query_params[:all][:is_priority] = 'false'
-          @query_params[:all][:include]     = 'content'
         end
 
         protected

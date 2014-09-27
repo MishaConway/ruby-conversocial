@@ -6,8 +6,6 @@ module Conversocial
 
         def initialize client
           super client
-          @query_params[:all][:is_priority] = 'false'
-          @query_params[:all][:include]     = 'content'
         end
 
         protected

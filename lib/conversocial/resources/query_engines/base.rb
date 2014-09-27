@@ -8,7 +8,15 @@ module Conversocial
 
         def initialize client
           @client = client
-          @query_params = {:all => {}, :find => {}}
+          clear
+        end
+
+        def default_all_query_params
+          {}
+        end
+
+        def default_find_query_params
+          {}
         end
 
         def each &block
@@ -18,12 +26,16 @@ module Conversocial
         end
 
         def limit l
-          @query_params[:all][:page_size] = l
+          where :page_size => l
+        end
+
+        def clear
+          @query_params = {}
           self
         end
 
         def where options
-          @query_params[:all][:options].merge! options
+          @query_params.merge! options
           self
         end
 
@@ -34,10 +46,11 @@ module Conversocial
           new_instance
         end
 
-        def find find_id, options={}
-          @query_params[:find][:fields] ||= model_klass.fields.join(',')
+        def find find_id
+          @query_params[:fields] ||= model_klass.fields.join(',')
 
-          json = get_json add_query_params("/#{find_id}", @query_params[:find])
+          json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
+          clear
           if json.kind_of? Exception
             if json.kind_of? RestClient::Exception
               JSON.parse json.response.body
@@ -50,7 +63,8 @@ module Conversocial
         end
 
         def all
-          json = get_json add_query_params("", @query_params[:all])
+          json = get_json add_query_params("", default_all_query_params.merge(@query_params))
+          clear
           if json.kind_of? Exception
             if json.kind_of? RestClient::Exception
               JSON.parse json.response.body
