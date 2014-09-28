@@ -26,11 +26,15 @@ module Conversocial
           self.class.fields
         end
 
-        def attributes
+        def attributes mark_not_yet_loaded=true
           attrs = nil
           disable_association_resolving do
             attrs = self.class.fields.map do |field_name|
-              [field_name, send(field_name.to_sym)]
+              val = send(field_name.to_sym)
+              if mark_not_yet_loaded && val.nil? && @loaded_attributes[field_name.to_sym].nil?
+                val = :not_yet_loaded
+              end
+              [field_name, val]
             end.to_h
           end
           attrs
@@ -38,7 +42,7 @@ module Conversocial
 
         def refresh
           disable_association_resolving do
-            assign_attributes query_engine.find(id).attributes
+            assign_attributes query_engine.find(id).attributes(false)
           end
           self
         end
@@ -56,6 +60,18 @@ module Conversocial
 
             define_method "#{f}=".to_sym do |v|
               @loaded_attributes[f] = 1
+
+              #if date or time attribute and value is a string parse as time
+              if v.kind_of?(String)
+                if %w{created date_to date_from date_joined last_login}.include?(f.to_s) || f.to_s.match(/date$/)
+                  if v.match /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/
+                    v = Date.parse v
+                  else
+                    v = Time.parse v
+                  end
+                end
+              end
+
               instance_variable_set "@#{f}", v
             end
 
@@ -63,6 +79,7 @@ module Conversocial
             define_method f do
               value = instance_variable_get "@#{f}"
               unless @disable_association_resolving
+                #lazily load in value if it hasn't been loaded yet
                 if value.nil?
                   unless @loaded_attributes[f]
                     refresh
@@ -70,6 +87,7 @@ module Conversocial
                   end
                 end
 
+                #lazily load association if it hasn't been loaded yet
                 if value.kind_of? Array
                   value = value.map do |v|
                     if association_attribute? v
@@ -84,6 +102,9 @@ module Conversocial
                   send "#{f}=".to_sym, value
                 end
               end
+
+
+
               value
             end
           end
