@@ -128,7 +128,7 @@ module Conversocial
         end
 
         def get_json path
-          puts "getting json for #{absolute_path(path)}"
+          #puts "getting json for #{absolute_path(path)}"
 
           uri = URI absolute_path(path)
           response = Net::HTTP.start(uri.host, uri.port,
@@ -148,7 +148,7 @@ module Conversocial
           else
             if 404 == response.code.to_i
               if json['message'] == "No such #{resource_name}"
-                puts "returning nil here"
+               # puts "returning nil here"
                 return nil
               end
             end
