@@ -2,7 +2,7 @@ module Conversocial
   module Resources
     module QueryEngines
       class Author < Base
-        undef_method :all
+        undef_method :fetch
 
         def initialize client
           super client

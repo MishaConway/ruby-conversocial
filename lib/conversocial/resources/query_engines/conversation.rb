@@ -8,7 +8,7 @@ module Conversocial
           super client
         end
 
-        def default_all_query_params
+        def default_fetch_query_params
           {:is_priority => false, :include => 'content'}
         end
 

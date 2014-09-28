@@ -13,7 +13,7 @@ module Conversocial
           clear
         end
 
-        def default_all_query_params
+        def default_fetch_query_params
           {}
         end
 
@@ -22,21 +22,21 @@ module Conversocial
         end
 
         def each &block
-          all.each do |member|
+          fetch.each do |member|
             block.call(member)
           end
         end
 
         def each_page &block
           @query_params[:fields] ||= model_klass.fields.join(',')
-          response = all_ex add_query_params("", default_all_query_params.merge(@query_params))
+          response = fetch_ex add_query_params("", default_fetch_query_params.merge(@query_params))
           begin
             continue = block.call response[:items]
             continue = true
             if continue
               next_page_url = (response[:json]['paging'] || {})['next_page']
               if next_page_url.present?
-                response = all_ex next_page_url
+                response = fetch_ex next_page_url
               else
                 response = nil
               end
@@ -71,10 +71,21 @@ module Conversocial
           end
         end
 
-        #rename all to fetch
-        def all
+        def size
+          fetch.size
+        end
+
+        def count
+          size
+        end
+
+        def last
+          fetch.last
+        end
+
+        def fetch
           @query_params[:fields] ||= model_klass.fields.join(',')
-          (all_ex add_query_params("", default_all_query_params.merge(@query_params)))[:items]
+          (fetch_ex add_query_params("", default_fetch_query_params.merge(@query_params)))[:items]
         end
 
         protected
@@ -83,7 +94,7 @@ module Conversocial
 
 
 
-        def all_ex url
+        def fetch_ex url
           json = get_json url
           clear
           items = []
