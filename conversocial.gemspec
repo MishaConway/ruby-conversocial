@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Conversocial::VERSION
   spec.authors       = ["Misha Conway"]
   spec.email         = ["mishaAconway@gmail.com"]
-  spec.summary       = %q{In progress: gem to wrap conversocial api}
-  spec.description   = %q{In progress: gem to wrap conversocial api}
+  spec.summary       = %q{Ruby gem that wraps the conversocial api in an ORM pattern}
+  spec.description   = %q{Ruby gem that wraps the conversocial api in an ORM pattern}
   spec.homepage      = ""
   spec.license       = "MIT"
 
