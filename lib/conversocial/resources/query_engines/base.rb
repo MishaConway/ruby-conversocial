@@ -28,6 +28,7 @@ module Conversocial
         end
 
         def each_page &block
+          @query_params[:fields] ||= model_klass.fields.join(',')
           response = all_ex add_query_params("", default_all_query_params.merge(@query_params))
           begin
             continue = block.call response[:items]
@@ -72,6 +73,7 @@ module Conversocial
 
         #rename all to fetch
         def all
+          @query_params[:fields] ||= model_klass.fields.join(',')
           (all_ex add_query_params("", default_all_query_params.merge(@query_params)))[:items]
         end
 
