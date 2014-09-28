@@ -21,9 +21,10 @@ module Conversocial
       (@channels ||= Conversocial::Resources::QueryEngines::Channel.new self).clear
     end
 
-    def keyvalues
-      (@keyvalues ||= Conversocial::Resources::QueryEngines::Keyvalue.new self).clear
-    end
+    #TODO: implement keyvalues support
+    #def keyvalues
+    #  (@keyvalues ||= Conversocial::Resources::QueryEngines::Keyvalue.new self).clear
+    #end
 
     def reports
       (@reports ||= Conversocial::Resources::QueryEngines::Report.new self).clear
