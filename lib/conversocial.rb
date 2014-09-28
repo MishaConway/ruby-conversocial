@@ -23,6 +23,9 @@ require 'conversocial/resources/query_engines/report'
 require 'conversocial/resources/query_engines/tag'
 require 'conversocial/resources/query_engines/user'
 
+#require exceptions
+require 'conversocial/resources/exceptions/base'
+
 module Conversocial
   # Your code goes here...
 end

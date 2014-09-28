@@ -1,3 +1,5 @@
+require 'net/http'
+
 module Conversocial
   module Resources
     module QueryEngines
@@ -63,20 +65,30 @@ module Conversocial
 
           json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
           clear
-          new json[resource_name]
+          if json
+            new json[resource_name]
+          end
         end
 
+        #rename all to fetch
         def all
           (all_ex add_query_params("", default_all_query_params.merge(@query_params)))[:items]
         end
 
         protected
 
+
+
+
+
         def all_ex url
           json = get_json url
           clear
-          items = json[plural_resource_name].map do |instance_params|
-            new instance_params
+          items = []
+          if json
+            items = json[plural_resource_name].map do |instance_params|
+              new instance_params
+            end
           end
           {:items => items, :json => json}
         end
@@ -96,15 +108,41 @@ module Conversocial
 
         def absolute_path path
           if path.match /^http/
-            path.gsub /api.conversocial.com/, "#{client.key}:#{client.secret}@api.conversocial.com"
+            path
           else
-            "https://#{client.key}:#{client.secret}@api.conversocial.com/v1.1#{base_path}#{path}"
+            "https://api.conversocial.com/v1.1#{base_path}#{path}"
           end
         end
 
         def get_json path
           puts "getting json for #{absolute_path(path)}"
-          ::JSON.parse RestClient.get(absolute_path(path))
+
+          uri = URI absolute_path(path)
+          response = Net::HTTP.start(uri.host, uri.port,
+                          :use_ssl => uri.scheme == 'https',
+                          :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+
+            request = Net::HTTP::Get.new uri.request_uri
+            request.basic_auth client.key, client.secret
+
+            http.request request # Net::HTTPResponse object
+          end
+
+          json = JSON.parse response.body
+
+          if response.kind_of? Net::HTTPSuccess
+            json
+          else
+            if 404 == response.code.to_i
+              if json['message'] == "No such #{resource_name}"
+                puts "returning nil here"
+                return nil
+              end
+            end
+
+            #some unknown error happened so raise standard exception
+            raise Conversocial::Resources::Exceptions::Base.new response.code, response.message, json['message']
+          end
         end
 
         def add_query_params(url, params_to_add)
