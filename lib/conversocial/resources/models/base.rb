@@ -27,12 +27,29 @@ module Conversocial
         end
 
         def attributes mark_not_yet_loaded=true
+          inspect_unloaded_association = ->(v) do
+            "#<#{singularized_resource_type_from_association_attribute(v).capitalize}(id: #{v['id']})>"
+          end
+
+
           attrs = nil
           disable_association_resolving do
             attrs = self.class.fields.map do |field_name|
               val = send(field_name.to_sym)
-              if mark_not_yet_loaded && val.nil? && @loaded_attributes[field_name.to_sym].nil?
-                val = :not_yet_loaded
+              if mark_not_yet_loaded
+                if val.nil? && @loaded_attributes[field_name.to_sym].nil?
+                  val = :not_yet_loaded
+                elsif association_attribute? val
+                  val = inspect_unloaded_association.call val
+                elsif val.kind_of? Array
+                  val = val.map do |v|
+                    if association_attribute? v
+                      inspect_unloaded_association.call v
+                    else
+                      v
+                    end
+                  end
+                end
               end
               [field_name, val]
             end.to_h
@@ -136,6 +153,10 @@ module Conversocial
 
         def pluralized_resource_type_from_association_attribute attribute_value
           attribute_value['url'].split('v1.1/').last.split('/').first
+        end
+
+        def singularized_resource_type_from_association_attribute attribute_value
+          pluralized_resource_type_from_association_attribute(attribute_value).chop
         end
 
         def load_association value
