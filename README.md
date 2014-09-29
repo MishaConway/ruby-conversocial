@@ -42,7 +42,13 @@ To find a resource by id
 To paginate through all of a certain resource do
 
     client.tags.each_page{ |tags| .... }
-    client.conversations( :status => 'unread' ).each_page{ |conversations| ... }
+    client.conversations( :status => 'unread' ).each_page{ |conversations| puts "conversation ids on this page are #{conversations.map(&:id).inspect}" }
+
+To get all the conversations for today
+
+    client.conversations.order(:oldest_sort_date).greater_than_or_equal_to(:oldest_sort_date, Date.today ).limit(50).each_page{ |conversations| ... }
+
+
 
 Items not yet supported, but that will be in a soon future version
 
