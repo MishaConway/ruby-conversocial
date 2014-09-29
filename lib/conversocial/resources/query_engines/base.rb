@@ -50,6 +50,12 @@ module Conversocial
         end
 
         def where options
+          options = options.map do |k,v|
+            v =  v.utc.strftime '%Y-%m-%dT%H:%M:%S' if v.kind_of? Time
+            v = v.to_s if v.kind_of? Date
+            [k,v]
+          end.to_h
+
           @query_params.merge! options
           self
         end
@@ -74,10 +80,7 @@ module Conversocial
         def size
           fetch.size
         end
-
-        def count
-          size
-        end
+        alias :count :size
 
         def last
           fetch.last
@@ -88,11 +91,40 @@ module Conversocial
           (fetch_ex add_query_params("", default_fetch_query_params.merge(@query_params)))[:items]
         end
 
+
+        def sort field
+          field = field.join ',' if field.kind_of? Array
+          where :sort => field
+        end
+        alias :sort_by :sort
+        alias :order :sort
+        alias :order_by :sort
+
+        def greater_than field, value
+          comparison_filter field, "gt", value
+        end
+
+        def greater_than_or_equal_to field, value
+          comparison_filter field, "gte", value
+        end
+
+        def lesser_than field, value
+          comparison_filter field, "lt", value
+        end
+
+        def less_than_or_equal_to field, value
+          comparison_filter field, "lte", value
+        end
+
+        def to_fetch_url
+          absolute_path add_query_params("", default_fetch_query_params.merge(@query_params))
+        end
+
         protected
 
-
-
-
+        def comparison_filter field, comparison_operator_modifier, value
+          where "#{field}_#{comparison_operator_modifier}".to_sym => value
+        end
 
         def fetch_ex url
           json = get_json url
@@ -148,7 +180,7 @@ module Conversocial
           else
             if 404 == response.code.to_i
               if json['message'] == "No such #{resource_name}"
-               # puts "returning nil here"
+                #puts "returning nil here"
                 return nil
               end
             end

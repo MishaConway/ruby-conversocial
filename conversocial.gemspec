@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["mishaAconway@gmail.com"]
   spec.summary       = %q{Ruby gem that wraps the conversocial api in an ORM pattern}
   spec.description   = %q{Ruby gem that wraps the conversocial api in an ORM pattern}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/MishaConway/ruby-conversocial"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
