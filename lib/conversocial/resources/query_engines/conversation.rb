@@ -12,6 +12,10 @@ module Conversocial
           {:is_priority => false, :include => 'content'}
         end
 
+        def default_find_query_params
+          {:include => 'content'}
+        end
+
         def limit l
           where :page_size => l
         end

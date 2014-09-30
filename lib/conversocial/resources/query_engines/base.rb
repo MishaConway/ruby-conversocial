@@ -60,20 +60,14 @@ module Conversocial
           self
         end
 
-        def new params={}
-          new_instance = model_klass.new params
-          new_instance.send :assign_client, client
-          new_instance.send :assign_query_engine, self
-          new_instance
-        end
-
         def find find_id
           @query_params[:fields] ||= model_klass.fields.join(',')
 
           json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
           clear
           if json
-            new json[resource_name]
+            item = new json[resource_name]
+            attach_content_to_items( [item], json['content']).first
           end
         end
 
@@ -135,12 +129,30 @@ module Conversocial
           clear
           items = []
           if json
+
+
             items = json[plural_resource_name].map do |instance_params|
               new instance_params
             end
+            items = attach_content_to_items items, json['content']
           end
           {:items => items, :json => json}
         end
+
+        def attach_content_to_items items, content_json_array
+          if content_json_array.present?
+            items.each do |item|
+              item.content_ids.each do |content_id|
+                content_json = content_json_array.find{ |ct| ct['id'] == content_id }
+                if content_json
+                  item.send :append_content, new_instance_of_klass(Conversocial::Resources::Models::Content, content_json)
+                end
+              end
+            end
+          end
+          items
+        end
+
 
 
         def resource_name
@@ -209,6 +221,17 @@ module Conversocial
           else
             path
           end
+        end
+
+        def new params={}
+          new_instance_of_klass model_klass, params
+        end
+
+        def new_instance_of_klass klass, params
+          new_instance = klass.new params
+          new_instance.send :assign_client, client
+          new_instance.send :assign_query_engine, self
+          new_instance
         end
 
       end

@@ -13,8 +13,11 @@ author
 channels
 assigned_to
 content_ids
+contents
 handling_times}.map &:to_sym
         end
+
+
 
         attributize_tags
 

@@ -2,11 +2,12 @@ module Conversocial
   module Resources
     module Models
       class Base
-        attr_reader :loaded_attributes
+        attr_reader :loaded_attributes, :contents
 
         def initialize params={}
           disable_association_resolving do
             @loaded_attributes = {}
+            @contents = []
             assign_attributes params
           end
         end
@@ -142,6 +143,10 @@ module Conversocial
 
         def assign_query_engine v
           @query_engine = v
+        end
+
+        def append_content content
+          @contents << content
         end
 
         def association_attribute? attribute_value
