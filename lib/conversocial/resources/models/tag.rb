@@ -7,8 +7,6 @@ module Conversocial
         end
 
         attributize_tags
-
-
       end
     end
   end
