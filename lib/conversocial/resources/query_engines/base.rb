@@ -189,8 +189,11 @@ module Conversocial
             http.request request # Net::HTTPResponse object
           end
 
-          json = JSON.parse response.body
+          if 429 == response.code.to_i
+            raise Conversocial::Resources::Exceptions::RateLimitExceeded.new response.code, nil, response.body
+          end
 
+          json = JSON.parse response.body
           if response.kind_of? Net::HTTPSuccess
             json
           else
