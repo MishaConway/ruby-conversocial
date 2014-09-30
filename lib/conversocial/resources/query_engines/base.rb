@@ -100,6 +100,10 @@ module Conversocial
         alias :order :sort
         alias :order_by :sort
 
+        def select *fields
+          where :fields => fields
+        end
+
         def greater_than field, value
           comparison_filter field, "gt", value
         end
