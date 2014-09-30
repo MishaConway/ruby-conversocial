@@ -115,9 +115,13 @@ Using the pagination api  is the best way to enumerate through an entire dataset
 
 To get all the conversations for today
 
-    client.conversations.greater_than_or_equal_to(:oldest_sort_date, Date.today ).limit(50).each_page do | |conversations|
+    client.conversations.greater_than_or_equal_to(:oldest_sort_date, Date.today ).limit(50).each_page do |conversations|
       conversations.each do |conversation|
-        puts "processing conversation #{conversation.id}"
+        puts "conversation #{conversation.id}"
+        conversation.contents.each do |content|
+          puts "#{content.author.real_name}: #{content.text}"
+        end
+        puts "\n"
       end
     end
 
