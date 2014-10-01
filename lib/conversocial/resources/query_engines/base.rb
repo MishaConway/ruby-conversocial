@@ -12,6 +12,7 @@ module Conversocial
 
         def initialize client
           @client = client
+          @cache  = Conversocial::Resources::QueryEngines::Cache.new client.cache_expiry
           clear
         end
 
@@ -52,10 +53,10 @@ module Conversocial
         end
 
         def where options
-          options = options.map do |k,v|
-            v =  v.utc.strftime '%Y-%m-%dT%H:%M:%S' if v.kind_of? Time
+          options = options.map do |k, v|
+            v = v.utc.strftime '%Y-%m-%dT%H:%M:%S' if v.kind_of? Time
             v = v.to_s if v.kind_of? Date
-            [k,v]
+            [k, v]
           end.to_h
 
           @query_params.merge! options
@@ -63,19 +64,22 @@ module Conversocial
         end
 
         def find find_id
-          @query_params[:fields] ||= model_klass.fields.join(',')
 
-          json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
-          clear
-          if json
-            item = new json[resource_name]
-            attach_content_to_items( [item], json['content']).first
-          end
+            @query_params[:fields] ||= model_klass.fields.join(',')
+
+            json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
+            clear
+            if json
+              item = new json[resource_name]
+              attach_content_to_items([item], json['content']).first
+            end
+
         end
 
         def size
           fetch.size
         end
+
         alias :count :size
 
         def last
@@ -92,6 +96,7 @@ module Conversocial
           field = field.join ',' if field.kind_of? Array
           where :sort => field
         end
+
         alias :sort_by :sort
         alias :order :sort
         alias :order_by :sort
@@ -157,7 +162,7 @@ module Conversocial
           if content_json_array.present?
             items.each do |item|
               item.content_ids.each do |content_id|
-                content_json = content_json_array.find{ |ct| ct['id'] == content_id }
+                content_json = content_json_array.find { |ct| ct['id'] == content_id }
                 if content_json
                   item.send :append_content, new_instance_of_klass(Conversocial::Resources::Models::Content, content_json)
                 end
@@ -189,9 +194,11 @@ module Conversocial
 
         def get_json path
           full_path = absolute_path path
-          client.send :log, self, full_path
 
-          response = https_basic_auth_get client.key, client.secret, full_path
+          response =  @cache.get_or_set full_path do
+            client.send :log, self, full_path
+            https_basic_auth_get client.key, client.secret, full_path
+          end
 
           if 429 == response.code.to_i
             raise Conversocial::Resources::Exceptions::RateLimitExceeded.new response.code, nil, response.body

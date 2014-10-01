@@ -26,6 +26,9 @@ You can optionally pass a logger to log api requests made by the client.
 
     client = Conversocial::Client.new :key => '...', :secret => '...', :logger => Logger.new(STDOUT)
 
+Yet another option is the cache_expiry option. If set (by default it is not), the client will cache api requests. This is useful if you are getting rate limited.
+
+    client = Conversocial::Client.new :key => '...', :secret => '...', :cache_expiry => 1.hour
 
 ## Resources
 

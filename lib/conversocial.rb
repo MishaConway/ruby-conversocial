@@ -3,6 +3,7 @@ require "conversocial/version"
 #require utils
 require 'conversocial/utils/http'
 require 'conversocial/utils/strings'
+require 'conversocial/resources/query_engines/cache'
 
 #require client
 require 'conversocial/client'

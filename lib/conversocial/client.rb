@@ -1,12 +1,13 @@
 module Conversocial
   class Client
-    attr_reader :version, :key, :secret, :logger
+    attr_reader :version, :key, :secret, :logger, :cache_expiry
 
     def initialize options={}
       @key = options[:key]
       @secret = options[:secret]
       @version = options[:version]
       @logger = options[:logger]
+      @cache_expiry = options[:cache_expiry]
     end
 
     def accounts
