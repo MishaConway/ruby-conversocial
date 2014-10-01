@@ -3,12 +3,10 @@ module Conversocial
     module Models
       class Keyvalue < Base
         def self.fields
-          %w{}
+          %w{key value value_type}
         end
 
         attributize_tags
-
-
       end
     end
   end

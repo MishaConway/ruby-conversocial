@@ -5,6 +5,8 @@ module Conversocial
     module QueryEngines
       class Base
         include Enumerable
+        include Conversocial::Utils::Strings
+        include Conversocial::Utils::HTTP
 
         attr_reader :client, :query_params
 
@@ -114,6 +116,14 @@ module Conversocial
           comparison_filter field, "lte", value
         end
 
+        def is_nil field
+          comparison_filter field, "isnull", 1
+        end
+
+        def is_not_nil field
+          comparison_filter field, "isnull", 0
+        end
+
         def to_fetch_url
           absolute_path add_query_params("", default_fetch_query_params.merge(@query_params))
         end
@@ -153,8 +163,6 @@ module Conversocial
           items
         end
 
-
-
         def resource_name
           demodulize(model_klass.name).downcase
         end
@@ -178,16 +186,7 @@ module Conversocial
         def get_json path
           #puts "getting json for #{absolute_path(path)}"
 
-          uri = URI absolute_path(path)
-          response = Net::HTTP.start(uri.host, uri.port,
-                          :use_ssl => uri.scheme == 'https',
-                          :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-
-            request = Net::HTTP::Get.new uri.request_uri
-            request.basic_auth client.key, client.secret
-
-            http.request request # Net::HTTPResponse object
-          end
+          response = https_basic_auth_get client.key, client.secret, absolute_path(path)
 
           if 429 == response.code.to_i
             raise Conversocial::Resources::Exceptions::RateLimitExceeded.new response.code, nil, response.body
@@ -206,23 +205,6 @@ module Conversocial
 
             #some unknown error happened so raise standard exception
             raise Conversocial::Resources::Exceptions::Base.new response.code, response.message, json['message']
-          end
-        end
-
-        def add_query_params(url, params_to_add)
-          uri    = URI url
-          params = (params_to_add || {}).merge URI.decode_www_form(uri.query.to_s).to_h
-          return url if params.blank?
-          uri.query = URI.encode_www_form(params)
-          uri.to_s
-        end
-
-        def demodulize(path)
-          path = path.to_s
-          if i = path.rindex('::')
-            path[(i+2)..-1]
-          else
-            path
           end
         end
 

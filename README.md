@@ -66,6 +66,9 @@ It is possible to chain filters
 
 ## Comparison Filters
 
+    #get all tags with id larger than 30000
+    client.tags.greater_than(:id, 30000).fetch
+
     #get all conversations where oldest sort date is greater than or equal to today
     client.conversations.greater_than_or_equal_to(:oldest_sort_date, Date.today ).fetch 
 
@@ -77,6 +80,12 @@ It is possible to chain filters
 
     #get all conversations where oldest sort date is lesser than today
     client.conversations.lesser_than(:oldest_sort_date, Date.today ).fetch
+
+    #get all users where first name is nil
+    client.users.is_nil(:first_name).fetch
+
+    #get all users where first name is not nil
+    client.users.is_not_nil(:first_name).fetch
 
 ## Sorting
 It is possible to sort your queries
@@ -119,7 +128,7 @@ To get all the conversations for today
       conversations.each do |conversation|
         puts "conversation #{conversation.id}"
         conversation.contents.each do |content|
-          puts "#{content.author.real_name}: #{content.text}"
+          puts "#{content.author.try(:real_name)}: #{content.text}"
         end
         puts "\n"
       end

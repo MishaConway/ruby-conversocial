@@ -2,6 +2,8 @@ module Conversocial
   module Resources
     module Models
       class Base
+        include Conversocial::Utils::Strings
+
         attr_reader :loaded_attributes, :contents
 
         def initialize params={}
@@ -65,6 +67,7 @@ module Conversocial
           self
         end
 
+
         protected
 
         def disable_association_resolving
@@ -121,8 +124,6 @@ module Conversocial
                 end
               end
 
-
-
               value
             end
           end
@@ -167,8 +168,6 @@ module Conversocial
         def load_association value
           client.send(pluralized_resource_type_from_association_attribute(value).to_sym).find value['id']
         end
-
-
       end
     end
   end
