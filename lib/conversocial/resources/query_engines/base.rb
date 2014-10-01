@@ -128,6 +128,10 @@ module Conversocial
           absolute_path add_query_params("", default_fetch_query_params.merge(@query_params))
         end
 
+        def new params={}
+          new_instance_of_klass model_klass, params
+        end
+
         protected
 
         def comparison_filter field, comparison_operator_modifier, value
@@ -184,9 +188,10 @@ module Conversocial
         end
 
         def get_json path
-          #puts "getting json for #{absolute_path(path)}"
+          full_path = absolute_path path
+          client.send :log, self, full_path
 
-          response = https_basic_auth_get client.key, client.secret, absolute_path(path)
+          response = https_basic_auth_get client.key, client.secret, full_path
 
           if 429 == response.code.to_i
             raise Conversocial::Resources::Exceptions::RateLimitExceeded.new response.code, nil, response.body
@@ -208,14 +213,11 @@ module Conversocial
           end
         end
 
-        def new params={}
-          new_instance_of_klass model_klass, params
-        end
-
         def new_instance_of_klass klass, params
-          new_instance = klass.new params
+          new_instance = klass.new
           new_instance.send :assign_client, client
           new_instance.send :assign_query_engine, self
+          new_instance.assign_attributes params
           new_instance
         end
 

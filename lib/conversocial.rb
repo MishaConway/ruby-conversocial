@@ -1,9 +1,11 @@
 require "conversocial/version"
-require 'conversocial/client'
 
 #require utils
 require 'conversocial/utils/http'
 require 'conversocial/utils/strings'
+
+#require client
+require 'conversocial/client'
 
 #require models
 require 'conversocial/resources/models/base'

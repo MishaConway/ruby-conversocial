@@ -1,12 +1,12 @@
 module Conversocial
   class Client
-    attr_reader :version, :key, :secret
-
+    attr_reader :version, :key, :secret, :logger
 
     def initialize options={}
       @key = options[:key]
       @secret = options[:secret]
       @version = options[:version]
+      @logger = options[:logger]
     end
 
     def accounts
@@ -40,6 +40,14 @@ module Conversocial
 
     def conversations
       (@conversations ||= Conversocial::Resources::QueryEngines::Conversation.new self).clear
+    end
+
+protected
+
+    def log engine, message
+      if logger
+        logger.debug "\033[32m#{[engine.class.name, message].join ' : '}\e[0m"
+      end
     end
   end
 end

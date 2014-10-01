@@ -22,6 +22,11 @@ Initialize the client with your key and secret
 
     client = Conversocial::Client.new :key => '...', :secret => '...'
 
+You can optionally pass a logger to log api requests made by the client.
+
+    client = Conversocial::Client.new :key => '...', :secret => '...', :logger => Logger.new(STDOUT)
+
+
 ## Resources
 
 Currently, this gem wraps most of the resources exposed by the Conversocial API. You can access these resources via the following query engines on the client object.

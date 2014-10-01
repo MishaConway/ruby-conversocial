@@ -20,9 +20,7 @@ module Conversocial
         end
 
         def assign_attributes params={}
-          params.each do |k, v|
-            send "#{k}=".to_sym, v
-          end
+          params.each { |k, v| send "#{k}=".to_sym, v }
         end
 
         def fields
@@ -30,55 +28,43 @@ module Conversocial
         end
 
         def attributes mark_not_yet_loaded=true
-          inspect_unloaded_association = ->(v) do
-            "#<#{singularized_resource_type_from_association_attribute(v).capitalize}(id: #{v['id']})>"
-          end
-
-
-          attrs = nil
           disable_association_resolving do
-            attrs = self.class.fields.map do |field_name|
+            self.class.fields.map do |field_name|
               val = send(field_name.to_sym)
-              if mark_not_yet_loaded
-                if val.nil? && @loaded_attributes[field_name.to_sym].nil?
-                  val = :not_yet_loaded
-                elsif association_attribute? val
-                  val = inspect_unloaded_association.call val
-                elsif val.kind_of? Array
-                  val = val.map do |v|
-                    if association_attribute? v
-                      inspect_unloaded_association.call v
-                    else
-                      v
-                    end
-                  end
-                end
-              end
+              val = :not_yet_loaded if mark_not_yet_loaded && val.nil? && @loaded_attributes[field_name.to_sym].nil?
               [field_name, val]
             end.to_h
           end
-          attrs
         end
 
         def refresh
           disable_association_resolving do
-            assign_attributes query_engine.find(id).attributes(false)
+            fully_loaded_instance = query_engine.find id
+            if fully_loaded_instance
+              assign_attributes fully_loaded_instance.attributes(false)
+            else
+              fields.each do |f|
+                @loaded_attributes[f.to_sym] = 1
+              end
+            end
           end
           self
         end
-
 
         protected
 
         def disable_association_resolving
           @disable_association_resolving = true
-          yield
+          result = yield
           @disable_association_resolving = false
+          result
         end
 
         def self.attributize_tags
           fields.map(&:to_sym).each do |f|
-
+            #############################################
+            #### define attribute writer for field  #####
+            #############################################
             define_method "#{f}=".to_sym do |v|
               @loaded_attributes[f] = 1
 
@@ -91,12 +77,28 @@ module Conversocial
                     v = Time.parse v
                   end
                 end
+              else
+                if v.kind_of? Array
+                  v = v.map do |vv|
+                    if association_attribute? vv
+                      client.send(pluralized_resource_type_from_association_attribute(vv).to_sym).new vv
+                    else
+                      vv
+                    end
+                  end
+                end
+
+                if association_attribute? v
+                  v = client.send(pluralized_resource_type_from_association_attribute(v).to_sym).new v
+                end
               end
 
               instance_variable_set "@#{f}", v
             end
 
-
+            #############################################
+            #### define attribute reader for field  #####
+            #############################################
             define_method f do
               value = instance_variable_get "@#{f}"
               unless @disable_association_resolving
@@ -107,23 +109,7 @@ module Conversocial
                     value = instance_variable_get "@#{f}"
                   end
                 end
-
-                #lazily load association if it hasn't been loaded yet
-                if value.kind_of? Array
-                  value = value.map do |v|
-                    if association_attribute? v
-                      load_association v
-                    else
-                      v
-                    end
-                  end
-                  send "#{f}=".to_sym, value
-                else
-                  value = load_association value if association_attribute? value
-                  send "#{f}=".to_sym, value
-                end
               end
-
               value
             end
           end
@@ -151,10 +137,7 @@ module Conversocial
         end
 
         def association_attribute? attribute_value
-          if attribute_value.kind_of? Hash
-            return true if attribute_value['url'].present?
-          end
-          false
+          attribute_value.kind_of?(Hash) && attribute_value.keys.sort == %w{id url}
         end
 
         def pluralized_resource_type_from_association_attribute attribute_value
