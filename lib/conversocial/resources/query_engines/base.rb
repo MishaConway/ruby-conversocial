@@ -195,10 +195,12 @@ module Conversocial
         def get_json path
           full_path = absolute_path path
 
-          response =  @cache.get_or_set full_path do
+          response =  @cache.get_or_set full_path, :get => ->(){
             client.send :log, self, full_path
             https_basic_auth_get client.key, client.secret, full_path
-          end
+          }, :if => ->( response ){
+            response.code.to_i >= 200 && response.code.to_i < 300
+          }
 
           if 429 == response.code.to_i
             raise Conversocial::Resources::Exceptions::RateLimitExceeded.new response.code, nil, response.body

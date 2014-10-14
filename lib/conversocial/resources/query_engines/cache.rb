@@ -9,11 +9,13 @@ module Conversocial
           @expiry = expiry.to_i
         end
 
-        def get_or_set key
+        def get_or_set key, options
           result = get key
           if result.nil?
-            result = yield
-            set key, result
+            result = options[:get].call
+            if options[:if].call result
+              set key, result
+            end
           end
           result
         end
