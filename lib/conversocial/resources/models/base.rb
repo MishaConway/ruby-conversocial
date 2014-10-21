@@ -74,7 +74,7 @@ module Conversocial
                   if v.match /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/
                     v = Date.parse v
                   else
-                    v = Time.parse v
+                    v = Time.parse "#{v} UTC"
                   end
                 end
               else
