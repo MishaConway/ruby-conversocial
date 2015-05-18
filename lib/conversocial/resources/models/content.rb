@@ -3,7 +3,7 @@ module Conversocial
     module Models
       class Content < Base
         def self.fields
-          %w{attachments parent author is_priority text tags sentiment channels platform platform_id link created_date type id is_private}
+          %w{attachments parent author is_priority text tags sentiment channels platform platform_id link created_date type id is_private is_by_source}
         end
         attributize_tags
 
