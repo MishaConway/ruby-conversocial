@@ -90,6 +90,8 @@ module Conversocial
 
                 if association_attribute? v
                   v = client.send(pluralized_resource_type_from_association_attribute(v).to_sym).new v
+                elsif :sentiment == f && v
+                  v = query_engine.send :new_instance_of_klass, Conversocial::Resources::Models::Sentiment, v
                 end
               end
 

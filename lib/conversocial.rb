@@ -19,6 +19,7 @@ require 'conversocial/resources/models/keyvalue'
 require 'conversocial/resources/models/report'
 require 'conversocial/resources/models/tag'
 require 'conversocial/resources/models/user'
+require 'conversocial/resources/models/sentiment'
 
 #require query engines
 require 'conversocial/resources/query_engines/base'
