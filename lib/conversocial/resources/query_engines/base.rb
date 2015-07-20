@@ -64,7 +64,6 @@ module Conversocial
         end
 
         def find find_id
-
             @query_params[:fields] ||= model_klass.fields.join(',')
 
             json = get_json add_query_params("/#{find_id}", default_find_query_params.merge(@query_params))
@@ -73,7 +72,6 @@ module Conversocial
               item = new json[resource_name]
               attach_content_to_items([item], json['content']).first
             end
-
         end
 
         def size
@@ -208,11 +206,19 @@ module Conversocial
 
           json = JSON.parse response.body
           if response.kind_of? Net::HTTPSuccess
+            if json.keys.include?('success') && !json['success']
+              if json.keys.include?('permsError') && !!json['permsError']
+                 raise Conversocial::Resources::Exceptions::PermissionsError.new response.code, response.message, (json['error'] || json['message'])
+              else
+                raise Conversocial::Resources::Exceptions::Base.new response.code, response.message, json['message']
+              end
+            else
+              json
+            end
             json
           else
             if 404 == response.code.to_i
               if json['message'] == "No such #{resource_name}"
-                #puts "returning nil here"
                 return nil
               end
             end

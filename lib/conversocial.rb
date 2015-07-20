@@ -35,6 +35,7 @@ require 'conversocial/resources/query_engines/user'
 #require exceptions
 require 'conversocial/resources/exceptions/base'
 require 'conversocial/resources/exceptions/rate_limit_exceeded'
+require 'conversocial/resources/exceptions/permissions_error'
 
 module Conversocial
   # Your code goes here...
