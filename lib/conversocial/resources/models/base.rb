@@ -139,8 +139,8 @@ module Conversocial
         end
 
         def association_attribute? attribute_value
-          attribute_value.kind_of?(Hash) && attribute_value.keys.sort == %w{id url}
-        end
+          attribute_value.kind_of?(Hash) && (attribute_value.keys.sort == %w{id url} || attribute_value.keys.sort == %w{id name url})
+          end
 
         def pluralized_resource_type_from_association_attribute attribute_value
           attribute_value['url'].split('v1.1/').last.split('/').first
